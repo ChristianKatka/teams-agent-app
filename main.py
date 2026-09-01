@@ -45,8 +45,12 @@ async def messages(request: Request) -> Response:
 
 # jwt_authorization_middleware enforces that incoming requests carry a valid
 # Bot Framework JWT before reaching the handler - without it, /api/messages
-# would process any unauthenticated request (confirmed while testing).
+# would process any unauthenticated request (confirmed while testing). It
+# reads app["agent_configuration"] to know which app/tenant to validate
+# against - omitting it fails with "Agent Authentication configuration not
+# found" (also confirmed while testing).
 APP = Application(middlewares=[jwt_authorization_middleware])
+APP["agent_configuration"] = CONNECTION_MANAGER.get_default_connection_configuration()
 APP.router.add_get("/", health)
 APP.router.add_post("/api/messages", messages)
 
