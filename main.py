@@ -4,7 +4,11 @@ from aiohttp.web import Application, Request, Response, json_response, run_app
 from dotenv import load_dotenv
 from microsoft_agents.activity import load_configuration_from_env
 from microsoft_agents.authentication.msal import MsalConnectionManager
-from microsoft_agents.hosting.aiohttp import CloudAdapter, start_agent_process
+from microsoft_agents.hosting.aiohttp import (
+    CloudAdapter,
+    jwt_authorization_middleware,
+    start_agent_process,
+)
 from microsoft_agents.hosting.core import (
     AgentApplication,
     Authorization,
@@ -39,7 +43,10 @@ async def messages(request: Request) -> Response:
     return await start_agent_process(request, AGENT_APP, ADAPTER)
 
 
-APP = Application()
+# jwt_authorization_middleware enforces that incoming requests carry a valid
+# Bot Framework JWT before reaching the handler - without it, /api/messages
+# would process any unauthenticated request (confirmed while testing).
+APP = Application(middlewares=[jwt_authorization_middleware])
 APP.router.add_get("/", health)
 APP.router.add_post("/api/messages", messages)
 
