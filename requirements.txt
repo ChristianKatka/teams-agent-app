@@ -4,3 +4,4 @@ microsoft-agents-hosting-core
 microsoft-agents-hosting-aiohttp
 microsoft-agents-authentication-msal
 microsoft-agents-activity
+pydantic-ai-slim[openai]
