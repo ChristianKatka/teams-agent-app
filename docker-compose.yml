@@ -11,6 +11,17 @@ services:
       - AZURE_OPENAI_API_KEY=${FOUNDRY_API_KEY}
       - AZURE_OPENAI_DEPLOYMENT=gpt-5.6-terra
       - AZURE_OPENAI_API_VERSION=2024-10-21
+      # Claude Code CLI (coding agent tool) - same Foundry resource/key as
+      # above, just also hosts Claude models under this account.
+      - CLAUDE_CODE_USE_FOUNDRY=1
+      - ANTHROPIC_FOUNDRY_RESOURCE=foundry-christian-instance
+      - ANTHROPIC_FOUNDRY_API_KEY=${FOUNDRY_API_KEY}
+      - ANTHROPIC_API_KEY=${FOUNDRY_API_KEY}
+      - ANTHROPIC_DEFAULT_OPUS_MODEL=claude-opus-5
+      - ANTHROPIC_DEFAULT_SONNET_MODEL=claude-sonnet-5
+      - ANTHROPIC_DEFAULT_HAIKU_MODEL=claude-haiku-4-5
+      - GITLAB_TOKEN=${GITLAB_TOKEN}
+      - GITLAB_PROJECT_PATH=testing-group7764236/teams-agent-code-this-frontend
 
   caddy:
     image: caddy:2

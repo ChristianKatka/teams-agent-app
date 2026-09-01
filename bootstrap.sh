@@ -5,12 +5,16 @@ set -euo pipefail
 # forceUpdateTag in vm.bicep). Installs Docker, pulls this repo (public, no
 # auth needed), and builds+runs the agent + Caddy (reverse proxy/TLS) via
 # docker compose. $1 = the bot's User-Assigned Managed Identity client ID,
-# $2 = the Azure AI Foundry API key - both passed through into a .env file
-# that docker compose loads automatically. This whole command runs via
-# protectedSettings (encrypted), not settings, because of $2.
+# $2 = the Azure AI Foundry API key, $3 = a GitLab personal access token
+# (read_repository/write_repository/api, scoped to the frontend project) used
+# by the coding-agent tool to clone/push/open MRs - all three passed through
+# into a .env file that docker compose loads automatically. This whole
+# command runs via protectedSettings (encrypted), not settings, because of
+# $2/$3.
 
-UAMI_CLIENT_ID="${1:?Usage: bootstrap.sh <uami-client-id> <foundry-api-key>}"
-FOUNDRY_API_KEY="${2:?Usage: bootstrap.sh <uami-client-id> <foundry-api-key>}"
+UAMI_CLIENT_ID="${1:?Usage: bootstrap.sh <uami-client-id> <foundry-api-key> <gitlab-token>}"
+FOUNDRY_API_KEY="${2:?Usage: bootstrap.sh <uami-client-id> <foundry-api-key> <gitlab-token>}"
+GITLAB_TOKEN="${3:?Usage: bootstrap.sh <uami-client-id> <foundry-api-key> <gitlab-token>}"
 
 # unattended-upgrades runs automatically right after boot on a fresh Ubuntu VM
 # and holds the dpkg lock - retry instead of assuming it's free.
@@ -48,6 +52,7 @@ cd /opt/teams-agent-app
 cat > .env <<ENVEOF
 UAMI_CLIENT_ID=${UAMI_CLIENT_ID}
 FOUNDRY_API_KEY=${FOUNDRY_API_KEY}
+GITLAB_TOKEN=${GITLAB_TOKEN}
 ENVEOF
 docker compose down 2>/dev/null || true
 docker compose up -d --build
