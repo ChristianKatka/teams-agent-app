@@ -1,38 +1,13 @@
 from os import environ
 
 from aiohttp.web import Application, Request, Response, json_response, run_app
-from dotenv import load_dotenv
-from microsoft_agents.activity import load_configuration_from_env
-from microsoft_agents.authentication.msal import MsalConnectionManager
 from microsoft_agents.hosting.aiohttp import (
-    CloudAdapter,
     jwt_authorization_middleware,
     start_agent_process,
 )
-from microsoft_agents.hosting.core import (
-    AgentApplication,
-    Authorization,
-    MemoryStorage,
-    TurnContext,
-    TurnState,
-)
 
-load_dotenv()
-agents_sdk_config = load_configuration_from_env(environ)
-
-STORAGE = MemoryStorage()
-CONNECTION_MANAGER = MsalConnectionManager(**agents_sdk_config)
-ADAPTER = CloudAdapter(connection_manager=CONNECTION_MANAGER)
-AUTHORIZATION = Authorization(STORAGE, CONNECTION_MANAGER, **agents_sdk_config)
-
-AGENT_APP = AgentApplication[TurnState](
-    storage=STORAGE, adapter=ADAPTER, authorization=AUTHORIZATION, **agents_sdk_config
-)
-
-
-@AGENT_APP.activity("message")
-async def on_message(context: TurnContext, _state: TurnState):
-    await context.send_activity(f"echo: {context.activity.text}")
+import bot  # noqa: F401 - registers the activity handler on import
+from config import ADAPTER, AGENT_APP, CONNECTION_MANAGER
 
 
 async def health(_request: Request) -> Response:
