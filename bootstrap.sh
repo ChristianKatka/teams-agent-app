@@ -9,8 +9,23 @@ set -euo pipefail
 
 UAMI_CLIENT_ID="${1:?Usage: bootstrap.sh <uami-client-id>}"
 
-apt-get update
-apt-get install -y ca-certificates curl gnupg git
+# unattended-upgrades runs automatically right after boot on a fresh Ubuntu VM
+# and holds the dpkg lock - retry instead of assuming it's free.
+apt_retry() {
+  local n=0
+  until "$@"; do
+    n=$((n + 1))
+    if [ "$n" -ge 20 ]; then
+      echo "apt command failed after $n attempts: $*" >&2
+      return 1
+    fi
+    echo "apt busy (lock held), retrying in 5s... (attempt $n)"
+    sleep 5
+  done
+}
+
+apt_retry apt-get update
+apt_retry apt-get install -y ca-certificates curl gnupg git
 install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --batch --yes --dearmor -o /etc/apt/keyrings/docker.gpg
 chmod a+r /etc/apt/keyrings/docker.gpg
@@ -18,8 +33,8 @@ echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
   $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
   tee /etc/apt/sources.list.d/docker.list > /dev/null
-apt-get update
-apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+apt_retry apt-get update
+apt_retry apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 # leftover from before this repo used docker compose - held port 8000
 docker rm -f teams-agent 2>/dev/null || true
