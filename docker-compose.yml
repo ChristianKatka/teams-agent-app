@@ -4,6 +4,9 @@ services:
     restart: unless-stopped
     ports:
       - "8000:8000"
+    environment:
+      - CONNECTIONS__SERVICE_CONNECTION__SETTINGS__AUTHTYPE=UserManagedIdentity
+      - CONNECTIONS__SERVICE_CONNECTION__SETTINGS__CLIENTID=${UAMI_CLIENT_ID}
 
   caddy:
     image: caddy:2

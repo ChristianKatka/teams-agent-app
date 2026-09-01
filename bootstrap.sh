@@ -4,7 +4,10 @@ set -euo pipefail
 # Runs as root via the Custom Script Extension, on every redeploy (forced via
 # forceUpdateTag in vm.bicep). Installs Docker, pulls this repo (public, no
 # auth needed), and builds+runs the agent + Caddy (reverse proxy/TLS) via
-# docker compose.
+# docker compose. $1 = the bot's User-Assigned Managed Identity client ID,
+# passed through into a .env file that docker compose loads automatically.
+
+UAMI_CLIENT_ID="${1:?Usage: bootstrap.sh <uami-client-id>}"
 
 apt-get update
 apt-get install -y ca-certificates curl gnupg git
@@ -24,5 +27,6 @@ docker rm -f teams-agent 2>/dev/null || true
 rm -rf /opt/teams-agent-app
 git clone https://github.com/ChristianKatka/teams-agent-app.git /opt/teams-agent-app
 cd /opt/teams-agent-app
+echo "UAMI_CLIENT_ID=${UAMI_CLIENT_ID}" > .env
 docker compose down 2>/dev/null || true
 docker compose up -d --build
