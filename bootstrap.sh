@@ -18,6 +18,9 @@ echo \
 apt-get update
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
+# leftover from before this repo used docker compose - held port 8000
+docker rm -f teams-agent 2>/dev/null || true
+
 rm -rf /opt/teams-agent-app
 git clone https://github.com/ChristianKatka/teams-agent-app.git /opt/teams-agent-app
 cd /opt/teams-agent-app
