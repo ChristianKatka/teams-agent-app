@@ -1,0 +1,21 @@
+services:
+  agent:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+    depends_on:
+      - agent
+
+volumes:
+  caddy_data:

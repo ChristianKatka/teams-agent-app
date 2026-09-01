@@ -1,0 +1,3 @@
+christian-teams-agent.swedencentral.cloudapp.azure.com {
+    reverse_proxy agent:8000
+}

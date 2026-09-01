@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Runs as root via the Custom Script Extension. Installs Docker, pulls this
-# repo (public, no auth needed), and builds+runs the agent container.
+# Runs as root via the Custom Script Extension, on every redeploy (forced via
+# forceUpdateTag in vm.bicep). Installs Docker, pulls this repo (public, no
+# auth needed), and builds+runs the agent + Caddy (reverse proxy/TLS) via
+# docker compose.
 
 apt-get update
 apt-get install -y ca-certificates curl gnupg git
@@ -19,6 +21,5 @@ apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin do
 rm -rf /opt/teams-agent-app
 git clone https://github.com/ChristianKatka/teams-agent-app.git /opt/teams-agent-app
 cd /opt/teams-agent-app
-docker build -t teams-agent .
-docker rm -f teams-agent 2>/dev/null || true
-docker run -d --name teams-agent --restart unless-stopped -p 8000:8000 teams-agent
+docker compose down 2>/dev/null || true
+docker compose up -d --build
